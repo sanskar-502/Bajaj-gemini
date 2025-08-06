@@ -1,90 +1,118 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any, Union
+# models.py
+
+"""
+Pydantic Data Models
+Defines the data structures and contracts for the API and internal components.
+Pydantic ensures data validation, serialization, and generates OpenAPI schemas.
+"""
+
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field
+
+
+# --- Enumerations for controlled vocabularies ---
 
 class DocumentType(str, Enum):
-    """Supported document types"""
+    """Enumeration for the types of documents the system can classify."""
     INSURANCE_POLICY = "insurance_policy"
     LEGAL_CONTRACT = "legal_contract"
     HR_POLICY = "hr_policy"
     COMPLIANCE_DOC = "compliance_doc"
     UNKNOWN = "unknown"
 
+
 class LogicTreeType(str, Enum):
-    """Logic tree operation types"""
+    """Enumeration for the types of logical operations in the reasoning tree."""
     AND = "AND"
     OR = "OR"
-    NOT = "NOT"
     CONDITIONAL = "CONDITIONAL"
 
+
+# --- Core Data Structures for Reasoning and Content ---
+
 class ClauseInfo(BaseModel):
-    """Information about a specific clause or section"""
-    title: str = Field(..., description="Title or name of the clause")
-    text: str = Field(..., description="Full text content of the clause")
-    document: str = Field(..., description="Source document filename")
-    page: Optional[int] = Field(None, description="Page number where clause appears")
-    relevance_score: float = Field(..., ge=0.0, le=1.0, description="Relevance score (0-1)")
-    clause_id: Optional[str] = Field(None, description="Unique identifier for the clause")
-    section: Optional[str] = Field(None, description="Section or subsection identifier")
+    """Represents a relevant clause or section retrieved from a document."""
+    title: str = Field(description="Title or name of the clause/section.")
+    text: str = Field(description="The full text content of the clause.")
+    document_id: str = Field(description="The unique ID of the source document.")
+    relevance_score: float = Field(description="Relevance score (0.0 to 1.0) of the clause to the query.", ge=0.0, le=1.0)
+    page: Optional[int] = Field(None, description="Page number where the clause appears, if applicable.")
+    clause_id: Optional[str] = Field(None, description="A unique identifier for this specific clause.")
+
 
 class LogicCondition(BaseModel):
-    """Individual logic condition"""
-    condition: str = Field(..., description="Description of the condition")
-    met: bool = Field(..., description="Whether the condition is met")
-    source_clause: Optional[str] = Field(None, description="Source clause for this condition")
+    """Represents a single condition within the reasoning logic tree."""
+    condition: str = Field(description="A human-readable description of the logical condition.")
+    is_met: bool = Field(description="Indicates whether the condition is met based on the evidence.")
+    source_clause_id: Optional[str] = Field(None, description="The ID of the clause providing evidence for this condition.")
+
 
 class LogicTree(BaseModel):
-    """Logic tree structure for reasoning"""
-    type: LogicTreeType = Field(..., description="Type of logic operation")
-    conditions: List[Union[str, 'LogicTree']] = Field(..., description="List of conditions or nested logic trees")
-    result: Optional[bool] = Field(None, description="Result of the logic evaluation")
+    """A recursive structure representing the logical reasoning process of the LLM."""
+    type: LogicTreeType = Field(description="The logical operation for this node (e.g., AND, OR).")
+    conditions: List[Union['LogicCondition', 'LogicTree']] = Field(description="List of conditions or nested logic trees.")
+    result: Optional[bool] = Field(None, description="The evaluated boolean result of this logic node.")
 
-class QueryResponse(BaseModel):
-    """Structured response for document queries"""
-    answer: str = Field(..., description="Natural language answer to the query")
-    clauses_used: List[ClauseInfo] = Field(..., description="List of relevant clauses used")
-    logic_tree: LogicTree = Field(..., description="Logic tree showing reasoning process")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score (0-1)")
-    query_intent: Optional[str] = Field(None, description="Detected intent of the query")
-    entities: Optional[Dict[str, Any]] = Field(None, description="Extracted entities from query")
 
-class DocumentMetadata(BaseModel):
-    """Metadata for uploaded documents"""
-    filename: str = Field(..., description="Original filename")
-    document_type: DocumentType = Field(..., description="Type of document")
-    upload_timestamp: str = Field(..., description="Upload timestamp")
-    file_size: int = Field(..., description="File size in bytes")
-    page_count: Optional[int] = Field(None, description="Number of pages")
-    company_name: Optional[str] = Field(None, description="Company name if applicable")
-    document_version: Optional[str] = Field(None, description="Document version")
+# --- API Request and Response Models ---
 
 class QueryRequest(BaseModel):
-    """Request model for document queries"""
-    question: str = Field(..., description="User's question about the documents")
-    document_ids: Optional[List[str]] = Field(None, description="Specific documents to search in")
-    include_logic: bool = Field(True, description="Whether to include logic tree in response")
-    max_results: Optional[int] = Field(None, description="Maximum number of clauses to return")
+    """Defines the structure for a user's query request."""
+    question: str
+    document_ids: Optional[List[str]] = None
+    include_logic: bool = True
+    max_results: int = 5
+
+class QueryResponse(BaseModel):
+    """Defines the structured response returned for a successful query."""
+    answer: str
+    clauses_used: List[ClauseInfo]
+    logic_tree: Optional[LogicTree] = None
+    confidence: float = Field(ge=0.0, le=1.0)
+    query_intent: Optional[str] = None
+    entities: Optional[Dict[str, Any]] = None
 
 class UploadResponse(BaseModel):
-    """Response for document upload"""
-    success: bool = Field(..., description="Whether upload was successful")
-    document_id: str = Field(..., description="Unique identifier for the uploaded document")
-    metadata: DocumentMetadata = Field(..., description="Document metadata")
-    chunks_created: int = Field(..., description="Number of text chunks created")
-    message: str = Field(..., description="Status message")
+    """Defines the response after a document is submitted for background processing."""
+    success: bool
+    document_id: str
+    message: str
+
+class SubmissionRequest(BaseModel):
+    """Defines the request body for the hackathon submission endpoint."""
+    documents: str
+    questions: List[str]
+
+class SubmissionResponse(BaseModel):
+    """Defines the response body for the hackathon submission endpoint."""
+    answers: List[str]
+
+# --- Internal and Utility Models ---
+
+class DocumentMetadata(BaseModel):
+    """Represents the metadata associated with a single processed document."""
+    document_id: str
+    document_type: DocumentType
+    upload_timestamp: str
+    file_size: Optional[int] = None
+    page_count: Optional[int] = None
+    company_name: Optional[str] = None
 
 class SearchResult(BaseModel):
-    """Individual search result"""
-    content: str = Field(..., description="Text content of the result")
-    metadata: Dict[str, Any] = Field(..., description="Metadata about the result")
-    score: float = Field(..., description="Similarity score")
-    source_document: str = Field(..., description="Source document")
+    """Represents a single raw search result from the vector store."""
+    content: str
+    metadata: Dict[str, Any]
+    score: float
 
 class ErrorResponse(BaseModel):
-    """Error response model"""
-    error: str = Field(..., description="Error message")
-    details: Optional[str] = Field(None, description="Additional error details")
-    error_code: Optional[str] = Field(None, description="Error code")
+    """A standardized format for returning errors from the API."""
+    error: str = Field(description="A high-level description of the error.")
+    details: Optional[str] = Field(None, description="Additional details about the error for debugging.")
+    error_code: Optional[str] = Field(None, description="An optional internal error code.")
 
-# Update forward references
-LogicTree.model_rebuild() 
+
+# This command resolves the forward reference in the LogicTree model,
+# allowing it to refer to itself for recursive structures.
+LogicTree.model_rebuild()

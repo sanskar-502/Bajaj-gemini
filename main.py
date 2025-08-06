@@ -1,7 +1,9 @@
+# main.py
+
 #!/usr/bin/env python3
 """
 LLM-powered Intelligent Query Retrieval System
-Main entry point for the application
+Main entry point for starting the FastAPI application.
 """
 
 import os
@@ -9,94 +11,83 @@ import sys
 import logging
 from pathlib import Path
 
-# Add the current directory to Python path
+# Add the project root to the Python path to ensure all modules are found
 sys.path.append(str(Path(__file__).parent))
 
-from config import Config
-from api import app
 import uvicorn
+from api import app
+from config import Config
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, Config.LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('app.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
-def check_environment():
-    """Check if required environment variables are set"""
-    # Check which LLM provider is configured
-    provider = Config.LLM_PROVIDER.lower()
+def setup_logging(log_level: str):
+    """Configures application-wide logging."""
+    level = getattr(logging, log_level.upper(), logging.INFO)
     
-    if provider == "openai":
-        if not Config.OPENAI_API_KEY:
-            logger.error("OpenAI API key is required when using OpenAI provider")
-            logger.error("Please set OPENAI_API_KEY in your .env file or environment")
-            return False
-    elif provider == "gemini":
-        if not Config.GEMINI_API_KEY:
-            logger.error("Gemini API key is required when using Gemini provider")
-            logger.error("Please set GEMINI_API_KEY in your .env file or environment")
-            return False
-    else:
-        # Check if at least one provider is available
-        if not Config.OPENAI_API_KEY and not Config.GEMINI_API_KEY:
-            logger.error("No LLM provider configured. Please set either OPENAI_API_KEY or GEMINI_API_KEY")
-            logger.error("You can also set LLM_PROVIDER to specify which one to use")
-            return False
-    
-    return True
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler("app.log", encoding='utf-8'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
-def create_directories():
-    """Create necessary directories"""
-    directories = [
-        Config.UPLOAD_DIR,
-        Config.VECTOR_STORE_DIR
-    ]
+def create_directories(config: Config):
+    """Creates necessary directories specified in the configuration."""
+    logger = logging.getLogger(__name__)
+    directories_to_create = [config.UPLOAD_DIR]
     
-    for directory in directories:
-        os.makedirs(directory, exist_ok=True)
-        logger.info(f"Created directory: {directory}")
+    if config.VECTOR_DB_TYPE == "faiss":
+        directories_to_create.append(config.VECTOR_STORE_DIR)
+    
+    for directory in directories_to_create:
+        try:
+            os.makedirs(directory, exist_ok=True)
+            logger.info(f"Ensured directory exists: {directory}")
+        except OSError as e:
+            logger.error(f"Failed to create directory {directory}: {e}")
+            raise
 
 def main():
-    """Main function to run the application"""
+    """
+    Main function to initialize configuration, set up the environment,
+    and run the FastAPI application server.
+    """
     try:
-        logger.info("Starting LLM-powered Intelligent Query–Retrieval System")
+        config = Config()
+        setup_logging(config.LOG_LEVEL)
+        logger = logging.getLogger(__name__)
         
-        # Check environment
-        if not check_environment():
-            sys.exit(1)
+        logger.info("🚀 Starting Intelligent Query–Retrieval System...")
         
-        # Create directories
-        create_directories()
+        create_directories(config)
         
-        # Log configuration
-        logger.info(f"LLM Provider: {Config.LLM_PROVIDER}")
-        logger.info(f"Vector DB Type: {Config.VECTOR_DB_TYPE}")
-        logger.info(f"Embedding Model: {Config.EMBEDDING_MODEL}")
-        logger.info(f"API Host: {Config.API_HOST}")
-        logger.info(f"API Port: {Config.API_PORT}")
+        logger.info("=" * 50)
+        logger.info(f"LLM Provider       : {config.LLM_PROVIDER}")
+        logger.info(f"Vector DB Type     : {config.VECTOR_DB_TYPE}")
+        logger.info(f"Embedding Model    : {config.EMBEDDING_MODEL}")
+        logger.info(f"API Server listening on http://{config.API_HOST}:{config.API_PORT}")
+        logger.info("=" * 50)
         
-        # Start the server
-        logger.info("Starting FastAPI server...")
         uvicorn.run(
             app,
-            host=Config.API_HOST,
-            port=Config.API_PORT,
-            log_level=Config.LOG_LEVEL.lower(),
+            host=config.API_HOST,
+            port=config.API_PORT,
+            log_level=config.LOG_LEVEL.lower(),
             access_log=True
         )
         
+    except ValueError as e:
+        logging.getLogger(__name__).error(f"❌ Configuration Error: {str(e)}")
+        logging.getLogger(__name__).error("Please correct your .env file and try again.")
+        sys.exit(1)
+        
     except KeyboardInterrupt:
-        logger.info("Shutting down gracefully...")
+        logging.getLogger(__name__).info("👋 Shutting down gracefully...")
+        
     except Exception as e:
-        logger.error(f"Application failed to start: {str(e)}")
+        logging.getLogger(__name__).critical(f"💥 Application failed to start: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()
