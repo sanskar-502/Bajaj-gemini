@@ -1,0 +1,44 @@
+# Windows-compatible requirements for LLM-powered Intelligent Query–Retrieval System
+
+# Core LLM and AI dependencies
+openai==1.3.0
+langchain==0.0.350
+langchain-openai==0.0.2
+langchain-community==0.0.10
+
+# Document processing (Windows-friendly)
+PyPDF2==3.0.1
+pdfminer.six==20221105
+# PyMuPDF==1.23.8  # Requires Visual Studio Build Tools
+python-docx==0.8.11
+python-pptx==0.6.21
+unstructured==0.10.30
+
+# Vector database and embeddings
+faiss-cpu==1.7.4
+sentence-transformers==2.2.2
+pinecone-client==2.2.4
+
+# Text processing and NLP
+nltk==3.8.1
+# spacy==3.7.2  # May require additional setup on Windows
+textstat==0.7.3
+
+# Web framework and API
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+
+# Data processing
+pandas==2.1.3
+numpy==1.24.3
+pydantic==2.5.0
+
+# Utilities
+python-dotenv==1.0.0
+tiktoken==0.5.1
+tqdm==4.66.1
+
+# Additional Windows-friendly packages
+wheel>=0.40.0
+setuptools>=65.0.0 
