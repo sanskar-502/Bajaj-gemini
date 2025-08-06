@@ -1,10 +1,8 @@
 import json
 import re
 from typing import List, Dict, Any, Optional, Tuple
-from openai import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain_openai import ChatOpenAI
 
 from config import Config
 from models import (
@@ -12,30 +10,27 @@ from models import (
     SearchResult, QueryRequest
 )
 from vector_store import VectorStore
+from llm_providers import LLMFactory, LLMProvider
 
 class QueryEngine:
     """Handles query processing, LLM interactions, and response generation"""
     
-    def __init__(self, vector_store: VectorStore):
+    def __init__(self, vector_store: VectorStore, llm_provider: str = None):
         self.config = Config()
         self.vector_store = vector_store
-        self.llm = None
-        self.openai_client = None
+        self.llm_provider = None
         
-        # Initialize LLM
-        self._initialize_llm()
+        # Initialize LLM provider
+        self._initialize_llm_provider(llm_provider)
     
-    def _initialize_llm(self):
-        """Initialize the language model"""
-        if self.config.OPENAI_API_KEY:
-            self.openai_client = OpenAI(api_key=self.config.OPENAI_API_KEY)
-            self.llm = ChatOpenAI(
-                model=self.config.OPENAI_MODEL,
-                temperature=0.1,
-                openai_api_key=self.config.OPENAI_API_KEY
-            )
-        else:
-            raise ValueError("OpenAI API key is required")
+    def _initialize_llm_provider(self, provider_type: str = None):
+        """Initialize the LLM provider"""
+        try:
+            self.llm_provider = LLMFactory.create_provider(provider_type)
+            print(f"Initialized {self.llm_provider.get_model_info()['provider']} provider with model {self.llm_provider.get_model_info()['model']}")
+        except Exception as e:
+            available_providers = LLMFactory.get_available_providers()
+            raise ValueError(f"Failed to initialize LLM provider. Available providers: {available_providers}. Error: {str(e)}")
     
     def process_query(self, request: QueryRequest) -> QueryResponse:
         """
@@ -86,36 +81,34 @@ class QueryEngine:
     
     def _extract_intent_and_entities(self, question: str) -> Tuple[str, Dict[str, Any]]:
         """Extract query intent and entities"""
-        prompt = PromptTemplate(
-            input_variables=["question"],
-            template="""
-            Analyze the following question and extract:
-            1. The main intent (what the user is asking for)
-            2. Key entities (people, organizations, conditions, etc.)
-            
-            Question: {question}
-            
-            Return your response as JSON:
-            {{
-                "intent": "description of what the user is asking",
-                "entities": {{
-                    "actors": ["list of people/organizations"],
-                    "actions": ["list of actions/verbs"],
-                    "conditions": ["list of conditions/requirements"],
-                    "timeframes": ["list of time-related terms"],
-                    "documents": ["list of document types mentioned"]
-                }}
+        prompt = f"""
+        Analyze the following question and extract:
+        1. The main intent (what the user is asking for)
+        2. Key entities (people, organizations, conditions, etc.)
+        
+        Question: {question}
+        
+        Return your response as JSON:
+        {{
+            "intent": "description of what the user is asking",
+            "entities": {{
+                "actors": ["list of people/organizations"],
+                "actions": ["list of actions/verbs"],
+                "conditions": ["list of conditions/requirements"],
+                "timeframes": ["list of time-related terms"],
+                "documents": ["list of document types mentioned"]
             }}
-            """
-        )
+        }}
+        """
         
         try:
-            chain = LLMChain(llm=self.llm, prompt=prompt)
-            result = chain.run(question=question)
+            result = self.llm_provider.generate_structured_response(prompt)
             
-            # Parse JSON response
-            parsed = json.loads(result)
-            return parsed.get("intent", "unknown"), parsed.get("entities", {})
+            if "error" in result:
+                # Fallback to simple extraction
+                return self._simple_intent_extraction(question), {}
+            
+            return result.get("intent", "unknown"), result.get("entities", {})
         except Exception as e:
             # Fallback to simple extraction
             return self._simple_intent_extraction(question), {}
@@ -142,32 +135,28 @@ class QueryEngine:
         # Prepare context from search results
         context = self._prepare_context(search_results)
         
-        prompt = PromptTemplate(
-            input_variables=["question", "context"],
-            template="""
-            You are an intelligent legal-insurance-HR-compliance document analyst assistant.
-            
-            Based on the following context from legal documents, answer the user's question clearly and factually.
-            
-            User Question: {question}
-            
-            Context from documents:
-            {context}
-            
-            Instructions:
-            1. Answer only based on the provided context
-            2. If the context doesn't contain enough information, say "The documents do not provide a clear answer to your question."
-            3. Be specific and cite relevant sections when possible
-            4. If there are conditions or exceptions, clearly state them
-            5. Provide a confidence score (0-1) based on how well the context answers the question
-            
-            Answer:
-            """
-        )
+        prompt = f"""
+        You are an intelligent legal-insurance-HR-compliance document analyst assistant.
+        
+        Based on the following context from legal documents, answer the user's question clearly and factually.
+        
+        User Question: {question}
+        
+        Context from documents:
+        {context}
+        
+        Instructions:
+        1. Answer only based on the provided context
+        2. If the context doesn't contain enough information, say "The documents do not provide a clear answer to your question."
+        3. Be specific and cite relevant sections when possible
+        4. If there are conditions or exceptions, clearly state them
+        5. Provide a confidence score (0-1) based on how well the context answers the question
+        
+        Answer:
+        """
         
         try:
-            chain = LLMChain(llm=self.llm, prompt=prompt)
-            result = chain.run(question=question, context=context)
+            result = self.llm_provider.generate_response(prompt)
             
             # Extract confidence score if present
             confidence = self._extract_confidence(result)

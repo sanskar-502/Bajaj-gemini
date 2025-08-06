@@ -8,9 +8,16 @@ load_dotenv()
 class Config:
     """Configuration class for the Intelligent Query-Retrieval System"""
     
+    # LLM Configuration
+    LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")  # openai or gemini
+    
     # OpenAI Configuration
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4")
+    
+    # Gemini Configuration
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
     
     # Vector Database Configuration
     VECTOR_DB_TYPE = os.getenv("VECTOR_DB_TYPE", "faiss")  # faiss or pinecone

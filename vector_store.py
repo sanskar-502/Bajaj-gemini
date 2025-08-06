@@ -38,10 +38,18 @@ class VectorStore:
     
     def _initialize_vector_db(self):
         """Initialize the vector database (FAISS or Pinecone)"""
-        if self.config.VECTOR_DB_TYPE == "pinecone":
-            self._initialize_pinecone()
+        if self.config.VECTOR_DB_TYPE == "pinecone" and self.config.PINECONE_API_KEY:
+            try:
+                self._initialize_pinecone()
+            except Exception as e:
+                print(f"Failed to initialize Pinecone: {e}")
+                print("Falling back to FAISS local vector database")
+                self._initialize_faiss()
+                self.config.VECTOR_DB_TYPE = "faiss"  # Ensure correct type after fallback
         else:
+            print("Using FAISS local vector database")
             self._initialize_faiss()
+            self.config.VECTOR_DB_TYPE = "faiss"  # Ensure correct type
     
     def _initialize_pinecone(self):
         """Initialize Pinecone vector database"""
@@ -219,6 +227,10 @@ class VectorStore:
         # Normalize query embedding
         faiss.normalize_L2(query_embedding.reshape(1, -1))
         
+        # Check if index has any vectors
+        if self.index is None or self.index.ntotal == 0:
+            raise ValueError("FAISS index is empty. Please upload and process documents first.")
+        
         # Search
         scores, indices = self.index.search(query_embedding.reshape(1, -1), top_k)
         
@@ -227,18 +239,15 @@ class VectorStore:
         for i, (score, idx) in enumerate(zip(scores[0], indices[0])):
             if idx < len(self.documents):
                 doc = self.documents[idx]
-                
                 # Apply document filter if specified
                 if document_ids and doc["metadata"]["document_id"] not in document_ids:
                     continue
-                
                 search_results.append(SearchResult(
                     content=doc["text"],
                     metadata=doc["metadata"],
                     score=float(score),
                     source_document=doc["metadata"]["document_id"]
                 ))
-        
         return search_results
     
     def get_document_by_id(self, document_id: str) -> Optional[Dict[str, Any]]:

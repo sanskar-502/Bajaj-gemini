@@ -1,0 +1,73 @@
+2025-08-06 22:46:53,641 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 22:46:53,641 - __main__ - INFO - Created directory: uploads
+2025-08-06 22:46:53,642 - __main__ - INFO - Created directory: vector_store
+2025-08-06 22:46:53,642 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 22:46:53,642 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 22:46:53,642 - __main__ - INFO - Embedding Model: text-embedding-3-small
+2025-08-06 22:46:53,642 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 22:46:53,642 - __main__ - INFO - API Port: 8000
+2025-08-06 22:46:53,643 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 22:48:37,351 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 22:48:37,352 - __main__ - INFO - Created directory: uploads
+2025-08-06 22:48:37,352 - __main__ - INFO - Created directory: vector_store
+2025-08-06 22:48:37,352 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 22:48:37,352 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 22:48:37,353 - __main__ - INFO - Embedding Model: text-embedding-3-small
+2025-08-06 22:48:37,353 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 22:48:37,353 - __main__ - INFO - API Port: 8000
+2025-08-06 22:48:37,353 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 22:50:07,222 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 22:50:07,222 - __main__ - INFO - Created directory: uploads
+2025-08-06 22:50:07,223 - __main__ - INFO - Created directory: vector_store
+2025-08-06 22:50:07,223 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 22:50:07,223 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 22:50:07,223 - __main__ - INFO - Embedding Model: text-embedding-3-small
+2025-08-06 22:50:07,223 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 22:50:07,224 - __main__ - INFO - API Port: 8000
+2025-08-06 22:50:07,224 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 22:53:34,377 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 22:53:34,378 - __main__ - INFO - Created directory: uploads
+2025-08-06 22:53:34,378 - __main__ - INFO - Created directory: vector_store
+2025-08-06 22:53:34,378 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 22:53:34,378 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 22:53:34,379 - __main__ - INFO - Embedding Model: text-embedding-3-small
+2025-08-06 22:53:34,379 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 22:53:34,379 - __main__ - INFO - API Port: 8000
+2025-08-06 22:53:34,379 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 22:56:21,311 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 401 Unauthorized"
+2025-08-06 23:00:33,060 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 23:00:33,060 - __main__ - INFO - Created directory: uploads
+2025-08-06 23:00:33,061 - __main__ - INFO - Created directory: vector_store
+2025-08-06 23:00:33,061 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 23:00:33,061 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 23:00:33,061 - __main__ - INFO - Embedding Model: all-MiniLM-L6-v2
+2025-08-06 23:00:33,061 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 23:00:33,061 - __main__ - INFO - API Port: 8000
+2025-08-06 23:00:33,061 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 23:08:38,966 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 23:08:38,967 - __main__ - INFO - Created directory: uploads
+2025-08-06 23:08:38,967 - __main__ - INFO - Created directory: vector_store
+2025-08-06 23:08:38,967 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 23:08:38,967 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 23:08:38,968 - __main__ - INFO - Embedding Model: all-MiniLM-L6-v2
+2025-08-06 23:08:38,968 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 23:08:38,968 - __main__ - INFO - API Port: 8000
+2025-08-06 23:08:38,968 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 23:12:19,078 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 23:12:19,079 - __main__ - INFO - Created directory: uploads
+2025-08-06 23:12:19,079 - __main__ - INFO - Created directory: vector_store
+2025-08-06 23:12:19,079 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 23:12:19,079 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 23:12:19,080 - __main__ - INFO - Embedding Model: all-MiniLM-L6-v2
+2025-08-06 23:12:19,080 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 23:12:19,080 - __main__ - INFO - API Port: 8000
+2025-08-06 23:12:19,080 - __main__ - INFO - Starting FastAPI server...
+2025-08-06 23:16:40,404 - __main__ - INFO - Starting LLM-powered Intelligent Query–Retrieval System
+2025-08-06 23:16:40,405 - __main__ - INFO - Created directory: uploads
+2025-08-06 23:16:40,405 - __main__ - INFO - Created directory: vector_store
+2025-08-06 23:16:40,405 - __main__ - INFO - LLM Provider: gemini
+2025-08-06 23:16:40,405 - __main__ - INFO - Vector DB Type: pinecone
+2025-08-06 23:16:40,406 - __main__ - INFO - Embedding Model: all-MiniLM-L6-v2
+2025-08-06 23:16:40,406 - __main__ - INFO - API Host: 0.0.0.0
+2025-08-06 23:16:40,406 - __main__ - INFO - API Port: 8000
+2025-08-06 23:16:40,406 - __main__ - INFO - Starting FastAPI server...

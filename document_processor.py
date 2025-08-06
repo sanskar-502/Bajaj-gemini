@@ -48,9 +48,13 @@ class DocumentProcessor:
         
         # Extract text and metadata
         text_content, metadata = self._extract_text_and_metadata(file_path)
+        print(f"[DocumentProcessor] Extracted text length: {len(text_content)}")
+        if not text_content.strip():
+            print(f"[DocumentProcessor] Warning: No text extracted from {file_path}")
         
         # Create chunks
         chunks = self._create_chunks(text_content, metadata)
+        print(f"[DocumentProcessor] Chunks created: {len(chunks)}")
         
         # Generate document ID
         document_id = str(uuid.uuid4())
@@ -142,19 +146,17 @@ class DocumentProcessor:
         """Process DOCX document"""
         doc = Document(file_path)
         text_content = ""
-        
         for paragraph in doc.paragraphs:
             text_content += paragraph.text + "\n"
-        
+        print(f"[DocumentProcessor] DOCX extracted text (first 300 chars): {text_content[:300]}")
         # Clean text
         text_content = self._clean_text(text_content)
-        
+        if not text_content.strip():
+            print(f"[DocumentProcessor] Warning: Cleaned DOCX text is empty for {file_path}")
         # Detect document type
         doc_type = self._detect_document_type(text_content)
-        
         # Extract company name
         company_name = self._extract_company_name(text_content)
-        
         metadata = DocumentMetadata(
             filename=os.path.basename(file_path),
             document_type=doc_type,
@@ -164,7 +166,6 @@ class DocumentProcessor:
             company_name=company_name,
             document_version=None
         )
-        
         return text_content, metadata
     
     def _process_txt(self, file_path: str) -> tuple[str, DocumentMetadata]:
@@ -232,6 +233,9 @@ class DocumentProcessor:
         
         # Split into sentences first
         sentences = sent_tokenize(text_content)
+        if not sentences:
+            print("[DocumentProcessor] Warning: sent_tokenize returned no sentences, falling back to line-based chunking.")
+            sentences = text_content.splitlines()
         
         current_chunk = ""
         chunk_id = 0
