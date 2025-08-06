@@ -1,0 +1,59 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+app.log
+
+# VS Code specific
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Uploads or generated data
+uploads/
+
+# Vector stores or DB
+vector_store/
+
+# Test cache
+.pytest_cache/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pylint
+.pylint.d/
+
+# Profiling data
+.prof
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*.tmp
