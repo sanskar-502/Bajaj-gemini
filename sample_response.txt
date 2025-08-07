@@ -1,0 +1,117 @@
+response of :  intfloat/multilingual-e5-large 
+
+{
+  "answer": "Use a class component if the component needs state or lifecycle methods, or if you need a React functionality whose function component equivalent is not yet available (like Error Boundaries).",
+  "clauses_used": [
+    {
+      "title": "Untitled Section",
+      "text": "Class Components: You can also use ES6 class to define a component. The above function component can be written as: ⬆ Back to Top 6. When to use a Class Component over a Function Component? const Button = ({ onLogin }) => React.createElement( 'div', { id: 'login-btn', onClick: onLogin }, 'Login' ) function Greeting({ message }) { return <h1>{`Hello, ${message}`}</h1> } class Greeting extends React.Component { render() { return <h1>{`Hello, ${this.props.message}`}</h1> } } 6/1/22, 12:54 PM sudheerj/reactjs-interview-questions: List of top 500 ReactJS Interview Questions & Answers....Coding exercise questions are co… https://github.com/sudheerj/reactjs-interview-questions#downloading-pdfepub-formats 4/159 If the component needs state or lifecycle methods then use class component otherwise use function component.",
+      "document_id": "becbef7d-1865-4cce-88a0-365fec5b2af8.pdf",
+      "relevance_score": 0.870321274,
+      "page": null,
+      "clause_id": null
+    },
+    {
+      "title": "Untitled Section",
+      "text": "How to create components in React? There are two possible ways to create a component. i. Function Components: This is the simplest way to create a component. Those are pure JavaScript functions that accept props object as the first parameter and return React elements: ii. Class Components: You can also use ES6 class to define a component. The above function component can be written as: ⬆ Back to Top 6. When to use a Class Component over a Function Component?",
+      "document_id": "becbef7d-1865-4cce-88a0-365fec5b2af8.pdf",
+      "relevance_score": 0.843630791,
+      "page": null,
+      "clause_id": null
+    },
+    {
+      "title": "Untitled Section",
+      "text": "What are stateless components? If the behaviour is independent of its state then it can be a stateless component. You can use either a function or a class for creating stateless components. But unless you need to use a lifecycle hook in your components, you should go for function components. There are a lot of benefits if you decide to use function components here; they are easy to write, understand, and test, a little faster, and you can avoid the this keyword altogether. ⬆ Back to Top 50. What are stateful components? If the behaviour of a component is dependent on the state of the component then it can be termed as stateful component. These stateful components are always class components and have a state that gets initialized in the constructor . React 16.8 Update: Hooks let you use state and other React features without writing classes.",
+      "document_id": "becbef7d-1865-4cce-88a0-365fec5b2af8.pdf",
+      "relevance_score": 0.842598081,
+      "page": null,
+      "clause_id": null
+    },
+    {
+      "title": "Untitled Section",
+      "text": "However, from React 16.8 with the addition of Hooks, you could use state , lifecycle methods and other features that were only available in class component right in your function component. *So, it is always recommended to use Function components, unless you need a React functionality whose Function component equivalent is not present yet, like Error Boundaries * ⬆ Back to Top 7. What are Pure Components? React.PureComponent is exactly the same as React.Component except that it handles the shouldComponentUpdate() method for you. When props or state changes, PureComponent will do a shallow comparison on both props and state. Component on the other hand won't compare current props and state to next out of the box. Thus, the component will re-render by default whenever shouldComponentUpdate is called. ⬆ Back to Top 8. What is state in React? State of a component is an object that holds some information that may change over the lifetime of the component.",
+      "document_id": "becbef7d-1865-4cce-88a0-365fec5b2af8.pdf",
+      "relevance_score": 0.83424,
+      "page": null,
+      "clause_id": null
+    },
+    {
+      "title": "Untitled Section",
+      "text": "In this case, you can set focus to button element. ⬆ Back to Top 283. Is ref argument available for all functions or class components? Regular function or class components don’t receive the ref argument, and ref is not available in props either. The second ref argument only exists when you define a component with React.forwardRef call.",
+      "document_id": "becbef7d-1865-4cce-88a0-365fec5b2af8.pdf",
+      "relevance_score": 0.831794739,
+      "page": null,
+      "clause_id": null
+    }
+  ],
+  "logic_tree": {
+    "type": "AND",
+    "conditions": [
+      {
+        "condition": "Need to use state or lifecycle methods before React 16.8",
+        "is_met": true,
+        "source_clause_id": "None"
+      },
+      {
+        "condition": "Need a React functionality whose Function component equivalent is not present yet, like Error Boundaries.",
+        "is_met": true,
+        "source_clause_id": "None"
+      }
+    ],
+    "result": null
+  },
+  "confidence": 1,
+  "query_intent": "General Inquiry",
+  "entities": {}
+}
+
+
+response of ll-MiniLM-L6-v2  :
+
+
+{
+  "answer": "If the component needs state or lifecycle methods then use class component otherwise use function component.",
+  "clauses_used": [
+    {
+      "title": "Untitled Section",
+      "text": "How to create components in React? There are two possible ways to create a component. i. Function Components: This is the simplest way to create a component. Those are pure JavaScript functions that accept props object as the first parameter and return React elements: ii. Class Components: You can also use ES6 class to define a component. The above function component can be written as: ⬆ Back to Top 6. When to use a Class Component over a Function Component?",
+      "document_id": "643173a6-2d3e-4a3f-b08a-aabb3c8c14ed.pdf",
+      "relevance_score": 0.71480751,
+      "page": null,
+      "clause_id": null
+    },
+    {
+      "title": "Untitled Section",
+      "text": "Class Components: You can also use ES6 class to define a component. The above function component can be written as: ⬆ Back to Top 6. When to use a Class Component over a Function Component? const Button = ({ onLogin }) => React.createElement( 'div', { id: 'login-btn', onClick: onLogin }, 'Login' ) function Greeting({ message }) { return <h1>{`Hello, ${message}`}</h1> } class Greeting extends React.Component { render() { return <h1>{`Hello, ${this.props.message}`}</h1> } } 6/1/22, 12:54 PM sudheerj/reactjs-interview-questions: List of top 500 ReactJS Interview Questions & Answers....Coding exercise questions are co… https://github.com/sudheerj/reactjs-interview-questions#downloading-pdfepub-formats 4/159 If the component needs state or lifecycle methods then use class component otherwise use function component.",
+      "document_id": "643173a6-2d3e-4a3f-b08a-aabb3c8c14ed.pdf",
+      "relevance_score": 0.606470108,
+      "page": null,
+      "clause_id": null
+    }
+  ],
+  "logic_tree": {
+    "type": "OR",
+    "conditions": [
+      {
+        "condition": "The component needs state.",
+        "is_met": true,
+        "source_clause_id": "None"
+      },
+      {
+        "condition": "The component needs lifecycle methods.",
+        "is_met": true,
+        "source_clause_id": "None"
+      }
+    ],
+    "result": null
+  },
+  "confidence": 1,
+  "query_intent": "General Inquiry",
+  "entities": {}
+}
+
+
+
+
+question: When should I use a Class Component instead of a Function Component?
+

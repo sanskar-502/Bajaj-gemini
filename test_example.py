@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Test example for the LLM-powered Intelligent Query–Retrieval System
-This file demonstrates how to use the system programmatically
+An improved test suite for the LLM-powered Intelligent Query–Retrieval System.
+This script programmatically tests the full pipeline and uses the project's
+.env configuration for initialization.
 """
 
 import os
 import sys
+import shutil
 from pathlib import Path
 
 # Add the current directory to Python path
@@ -17,153 +19,128 @@ from vector_store import VectorStore
 from query_engine import QueryEngine
 from models import QueryRequest
 
+# --- Test Constants ---
+SAMPLE_DOC_FILENAME = "test_agreement.txt"
+SAMPLE_DOC_ID = "sample-agreement-123"
+TEST_QUERY = "What severance is provided for termination without cause?"
+EXPECTED_ANSWER_SNIPPET = "one month's salary"
+SAMPLE_TEXT = """
+EMPLOYMENT AGREEMENT
 
-def create_sample_document():
-    """Create a sample document for testing"""
-    sample_text = """
-    EMPLOYMENT AGREEMENT
+This Agreement is between Global Tech Inc. and Jane Smith, effective July 1, 2024.
 
-    This Employment Agreement (the "Agreement") is entered into between ABC Corporation (the "Company") and John Doe (the "Employee") effective as of January 1, 2024.
+SECTION 1: TERMINATION
+The Company may terminate this Agreement without cause by providing 30 days notice.
 
-    SECTION 1: TERM OF EMPLOYMENT
-    The Employee's employment shall commence on January 1, 2024, and shall continue until terminated in accordance with the terms of this Agreement.
+SECTION 2: SEVERANCE
+If the Company terminates the Employee without cause, the Employee shall be entitled to
+severance pay equal to one month's salary for each year of service.
+"""
 
-    SECTION 2: TERMINATION
-    2.1 The Company may terminate this Agreement at any time for cause, including but not limited to:
-        - Violation of company policies
-        - Misconduct or insubordination
+class SystemTests:
+    """A class to encapsulate all system integration tests."""
+    
+    config = None
+    doc_processor = None
+    vector_store = None
+    query_engine = None
 
-    2.2 The Company may terminate this Agreement without cause by providing 30 days written notice to the Employee.
+    @classmethod
+    def setup_class(cls):
+        """
+        Set up the test environment once for all tests.
+        This initializes all components based on the .env file.
+        """
+        print("\n--- Setting up test environment ---")
+        try:
+            cls.config = Config()
+            cls.doc_processor = DocumentProcessor()
+            cls.vector_store = VectorStore()
+            cls.query_engine = QueryEngine(cls.vector_store)
 
-    SECTION 3: SEVERANCE
-    If the Company terminates the Employee without cause, the Employee shall be entitled to severance pay equal to one month's salary for each year of service.
-    """
-    sample_file = "sample_employment_agreement.txt"
-    with open(sample_file, "w") as f:
-        f.write(sample_text)
-    return sample_file
+            with open(SAMPLE_DOC_FILENAME, "w") as f:
+                f.write(SAMPLE_TEXT)
 
+            print(f"Processing sample document: {SAMPLE_DOC_FILENAME}")
+            doc_result = cls.doc_processor.process_document(SAMPLE_DOC_FILENAME, SAMPLE_DOC_ID)
+            cls.vector_store.add_documents(doc_result["chunks"])
+            print("--- Setup complete ---")
+        except Exception as e:
+            print(f"--- ❌ SETUP FAILED: {e} ---")
+            cls.teardown_class()
+            sys.exit(1)
 
-def test_document_processing():
-    """Test document processing functionality"""
-    print("🧪 Testing Document Processing...")
-    sample_file = create_sample_document()
-    try:
-        processor = DocumentProcessor()
-        # FIX: Provide a document_id as the second argument
-        result = processor.process_document(sample_file, document_id="test_doc_proc.txt")
-        print("✅ Document processed successfully!")
-        print(f"   Document ID: {result['document_id']}")
-        print(f"   Total chunks: {result['total_chunks']}")
-        return result
-    except Exception as e:
-        print(f"❌ Document processing failed: {e}")
-        return None
-    finally:
-        if os.path.exists(sample_file):
-            os.remove(sample_file)
+    @classmethod
+    def teardown_class(cls):
+        """Clean up the test environment after all tests are run."""
+        print("\n--- Tearing down test environment ---")
+        if os.path.exists(SAMPLE_DOC_FILENAME):
+            os.remove(SAMPLE_DOC_FILENAME)
+        
+        if cls.config and cls.config.VECTOR_DB_TYPE == "faiss":
+            if os.path.exists(cls.config.VECTOR_STORE_DIR):
+                shutil.rmtree(cls.config.VECTOR_STORE_DIR)
+        
+        print("--- Teardown complete ---")
 
+    def test_document_is_processed(self):
+        """Test 1: Verifies that the document was processed and indexed."""
+        print("\n🧪 1. Testing Document Indexing...")
+        stats = self.vector_store.get_stats()
+        
+        assert stats["total_vectors"] > 0, "No vectors were added to the store."
+        print(f"✅ PASSED: Vector store contains {stats['total_vectors']} vectors.")
 
-def test_vector_store():
-    """Test vector store functionality"""
-    print("\n🧪 Testing Vector Store...")
-    try:
-        vector_store = VectorStore()
-        sample_chunks = [{
-            "id": "vs_chunk_1",
-            "text": "The Company may terminate this Agreement at any time for cause.",
-            "metadata": {"document_id": "vs_test.pdf", "chunk_id": 1}
-        }]
-        vector_store.add_documents(sample_chunks)
-        search_results = vector_store.search("termination conditions", top_k=1)
-        print("✅ Vector store test successful!")
-        print(f"   Search results: {len(search_results)}")
-        return vector_store
-    except Exception as e:
-        print(f"❌ Vector store test failed: {e}")
-        return None
-
-
-def test_query_engine(vector_store: VectorStore):
-    """Test query engine functionality"""
-    print("\n🧪 Testing Query Engine...")
-    if not vector_store:
-        print("⏩ Skipping Query Engine test because Vector Store is unavailable.")
-        return None
-    try:
-        query_engine = QueryEngine(vector_store)
-        request = QueryRequest(question="What are the conditions for termination for cause?")
-        response = query_engine.process_query(request)
-        print("✅ Query engine test successful!")
-        print(f"   Answer: {response.answer[:70]}...")
-        return query_engine
-    except Exception as e:
-        print(f"❌ Query engine test failed: {e}")
-        return None
-
-
-def test_end_to_end():
-    """Test the complete system end-to-end"""
-    print("\n🧪 Testing End-to-End System...")
-    try:
-        # Step 1: Process document
-        doc_result = test_document_processing()
-        if not doc_result:
-            raise ValueError("Document processing step failed.")
-
-        # Step 2: Initialize vector store and add documents
-        vector_store = VectorStore()
-        vector_store.add_documents(doc_result["chunks"])
-
-        # Step 3: Test query engine
-        query_engine = QueryEngine(vector_store)
-        request = QueryRequest(question="What severance is provided for termination without cause?")
-        response = query_engine.process_query(request)
-
-        print("✅ End-to-end test successful!")
-        print(f"   Query: {request.question}")
+    def test_retrieval_and_query(self):
+        """Test 2: Verifies the full RAG pipeline from query to answer."""
+        print("\n🧪 2. Testing End-to-End Query and Retrieval...")
+        
+        request = QueryRequest(question=TEST_QUERY, document_ids=[SAMPLE_DOC_ID])
+        response = self.query_engine.process_query(request)
+        
+        assert response is not None, "Query engine returned no response."
+        assert response.answer is not None, "Response object has no answer."
+        assert EXPECTED_ANSWER_SNIPPET in response.answer.lower(), \
+            f"Answer did not contain expected text. Got: '{response.answer}'"
+            
+        print("✅ PASSED: End-to-end query returned the correct answer.")
+        print(f"   Query: {TEST_QUERY}")
         print(f"   Answer: {response.answer}")
-        return True
-    except Exception as e:
-        print(f"❌ End-to-end test failed: {e}")
-        return False
 
 
 def main():
-    """Main test function"""
+    """Main function to run the test suite."""
     print("🚀 LLM-powered Intelligent Query–Retrieval System - Test Suite")
-    print("=" * 70)
-
-    # Sequentially run tests
+    print("=" * 60)
+    
+    SystemTests.setup_class()
+    
+    test_suite = SystemTests()
     passed_tests = 0
-    total_tests = 4
-
-    # Test 1: Document Processing
-    doc_result = test_document_processing()
-    if doc_result:
+    total_tests = 0
+    
+    try:
+        total_tests += 1
+        test_suite.test_document_is_processed()
         passed_tests += 1
 
-    # Test 2: Vector Store
-    vector_store = test_vector_store()
-    if vector_store:
+        total_tests += 1
+        test_suite.test_retrieval_and_query()
         passed_tests += 1
 
-    # Test 3: Query Engine (depends on vector store)
-    if test_query_engine(vector_store):
-        passed_tests += 1
-
-    # Test 4: End-to-End
-    if test_end_to_end():
-        passed_tests += 1
-
-    # Summary
-    print("\n" + "=" * 70)
+    except AssertionError as e:
+        print(f"❌ TEST FAILED: {e}")
+    except Exception as e:
+        print(f"❌ AN UNEXPECTED ERROR OCCURRED: {e}")
+    
+    SystemTests.teardown_class()
+    
+    print("\n" + "=" * 60)
     print(f"📊 Test Results: {passed_tests}/{total_tests} tests passed")
-
     if passed_tests == total_tests:
-        print("🎉 All tests passed! The system is working correctly.")
+        print("🎉 All tests passed!")
     else:
-        print("⚠️  Some tests failed. Please check the logs above for details.")
+        print("⚠️ Some tests failed.")
 
 if __name__ == "__main__":
     main()
