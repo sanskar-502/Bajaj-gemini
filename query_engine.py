@@ -50,17 +50,41 @@ class QueryEngine:
         context = "\n\n".join(
             f"Source Document ID: {c.document_id}\nClause Content:\n{c.text}" for c in clauses
         )
-        prompt = f"Based only on the context below, answer the user's question.\n\nContext:\n---\n{context}\n---\n\nUser Question: {question}\n\nAnswer concisely. After your answer, on a new line, provide a confidence score like this: Confidence: [0.0-1.0]"
+        
+        # --- MODIFIED PROMPT ---
+        prompt = f"""
+        You are an expert document analyst. Your task is to answer the user's question based *only* on the provided context.
+
+        **Context from Documents:**
+        ---
+        {context}
+        ---
+
+        **User's Question:** {question}
+
+        **Instructions:**
+        1.  Synthesize a concise and factual answer from the context.
+        2.  If the context contains a direct quote that answers the question, prefer using that quote.
+        3.  Do not add any extra information or explanations not found in the text.
+        4.  If the answer is not in the context, respond with "The provided documents do not contain a clear answer to this question."
+        5.  Directly after your answer, provide a confidence score on a new line, like this:
+            Confidence: [a number between 0.0 and 1.0]
+        """
         
         response_text = self.llm_provider.generate_response(prompt)
         
         confidence_match = re.search(r"Confidence:\s*([0-9]*\.?[0-9]+)", response_text, re.IGNORECASE)
         if confidence_match:
-            confidence = float(confidence_match.group(1))
-            answer = response_text.split(confidence_match.group(0))[0].strip()
+            try:
+                confidence = float(confidence_match.group(1))
+                answer = response_text.split(confidence_match.group(0))[0].strip()
+            except ValueError:
+                confidence = 0.5
+                answer = response_text.strip()
         else:
             confidence = 0.5
             answer = response_text.strip()
+            
         return answer, confidence
 
     def _generate_logic_tree_with_llm(self, question: str, clauses: List[ClauseInfo]) -> Optional[LogicTree]:
